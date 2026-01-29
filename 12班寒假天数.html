@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滑动天数选择器 - 开学典礼提醒</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
+            padding: 20px;
+            overflow-x: hidden;
+            transition: transform 0.1s;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+        }
+        
+        h1 {
+            color: #1a2a6c;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #555;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .slider-container {
+            background: #f5f7ff;
+            border-radius: 15px;
+            padding: 40px 30px;
+            margin-bottom: 40px;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #e0e7ff;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .slider-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+            outline: none;
+            transition: opacity 0.2s;
+        }
+        
+        .slider:hover {
+            opacity: 0.9;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ff8a00;
+            cursor: pointer;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #ff6a00;
+        }
+        
+        .slider-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #ff8a00;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            transition: all 0.3s;
+        }
+        
+        .unit {
+            font-size: 1.8rem;
+            color: #3a7bd5;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .slider-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .info-box {
+            background: #e8f4ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 5px solid #3a7bd5;
+            text-align: left;
+        }
+        
+        .info-box h3 {
+            color: #1a2a6c;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .info-box p {
+            color: #444;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            color: #e52e71;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+        }
+        
+        .modal h2 {
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .modal p {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .modal-close {
+            background: #3a7bd5;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .modal-close:hover {
+            background: #1a2a6c;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(26, 42, 108, 0.3);
+        }
+        
+        .vibration-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: vibrate 0.5s infinite alternate;
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        @keyframes vibrate {
+            0% { transform: translateX(-2px); }
+            25% { transform: translateX(2px) rotate(2deg); }
+            50% { transform: translateX(-2px) rotate(-2deg); }
+            75% { transform: translateX(2px) rotate(2deg); }
+            100% { transform: translateX(-2px) rotate(-2deg); }
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .slider-value {
+                font-size: 2.8rem;
+            }
+            
+            .modal {
+                padding: 30px 20px;
+            }
+        }
+        
+        footer {
+            margin-top: 40px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>12班开学倒计时选择器</h1>
+        <p class="subtitle">滑动选择天数，设置开学时间</p>
+        
+        <div class="slider-container">
+            <div class="slider-label">
+                <span>选择天数</span>
+                <span>范围: 0 - 30 天</span>
+            </div>
+            
+            <div class="slider-wrapper">
+                <input type="range" min="0" max="30" value="0" class="slider" id="daySlider">
+            </div>
+            
+            <div class="slider-value" id="dayValue">0</div>
+            <div class="unit">天</div>
+            
+            <div class="slider-scale">
+                <span>0</span>
+                <span>5</span>
+                <span>10</span>
+                <span>15</span>
+                <span>20</span>
+                <span>25</span>
+                <span>30</span>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>使用说明</h3>
+            <p>1. 拖动上方滑块选择天数（0-30）</p>
+            <p>2. 释放鼠标/手指后，滑块将自动归零</p>
+            <p>3. 系统将弹出提示并触发<span class="highlight">振动和屏幕颤抖效果</span></p>
+            <p>4. 提示内容：<span class="highlight">1月30日开学典礼</span></p>
+        </div>
+        
+        <footer>
+            提示：请在移动设备上体验振动效果，在PC上体验屏幕颤抖效果
+        </footer>
+    </div>
+    
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="vibration-icon">📳</div>
+            <h2>开学提醒！</h2>
+            <p id="modalMessage">您选择了 <span id="selectedDays">0</span> 天</p>
+            <p><strong>重要通知：1月30日开学典礼！</strong></p>
+            <p>请提前做好准备，按时参加开学典礼。</p>
+            <button class="modal-close" id="closeModal">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const daySlider = document.getElementById('daySlider');
+        const dayValue = document.getElementById('dayValue');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const selectedDays = document.getElementById('selectedDays');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeModal = document.getElementById('closeModal');
+        const body = document.body;
+        
+        // 更新显示的数值
+        daySlider.addEventListener('input', function() {
+            const value = this.value;
+            dayValue.textContent = value;
+            
+            // 根据数值改变颜色
+            const percentage = value / 30;
+            const hue = 30 + (1 - percentage) * 210; // 从橙色(30)到蓝色(240)
+            dayValue.style.color = `hsl(${hue}, 100%, 50%)`;
+        });
+        
+        // 滑动条释放事件
+        daySlider.addEventListener('change', function() {
+            const value = this.value;
+            
+            if (value > 0) {
+                // 记录选择的天数
+                selectedDays.textContent = value;
+                modalMessage.textContent = `您选择了 ${value} 天`;
+                
+                // 触发振动效果
+                triggerVibration();
+                
+                // 触发屏幕颤抖效果
+                triggerScreenShake();
+                
+                // 延迟显示弹窗，让颤抖效果先发生
+                setTimeout(() => {
+                    modalOverlay.style.display = 'flex';
+                }, 300);
+                
+                // 延迟将滑块归零
+                setTimeout(() => {
+                    daySlider.value = 0;
+                    dayValue.textContent = '0';
+                    dayValue.style.color = '#ff8a00';
+                }, 100);
+            }
+        });
+        
+        // 触发振动效果
+        function triggerVibration() {
+            // 检查浏览器是否支持振动API
+            if ('vibrate' in navigator) {
+                // 振动模式：振动200ms，暂停100ms，再振动200ms
+                navigator.vibrate([200, 100, 200]);
+            } else {
+                console.log('振动API在此设备上不可用');
+            }
+        }
+        
+        // 触发屏幕颤抖效果
+        function triggerScreenShake() {
+            // 为body添加颤抖动画类
+            body.classList.add('shake-animation');
+            
+            // 动画结束后移除类，以便可以再次触发
+            setTimeout(() => {
+                body.classList.remove('shake-animation');
+            }, 500);
+        }
+        
+        // 关闭弹窗
+        closeModal.addEventListener('click', function() {
+            modalOverlay.style.display = 'none';
+        });
+        
+        // 点击弹窗外部关闭弹窗
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
+        });
+        
+        // 初始加载时显示欢迎信息
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                alert("欢迎使用开学倒计时选择器！\n拖动滑块选择天数，释放后查看效果。");
+            }, 500);
+        });
+    </script>
+</body>
+</html>
